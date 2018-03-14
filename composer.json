@@ -1,0 +1,21 @@
+{
+    "name": "apollo11/yii2-logger",
+    "description": "Log application errors in slack channel",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Zura Tevdoradze",
+            "email": "zusate@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "~2.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "apollo11\\logger\\": ""
+        }
+    }
+}

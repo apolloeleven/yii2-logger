@@ -8,6 +8,7 @@
 
 namespace apollo11\logger;
 use Exception;
+use function GuzzleHttp\Psr7\str;
 use yii\httpclient\Client;
 use yii\log\Target;
 
@@ -21,6 +22,31 @@ class SlackLogger extends  Target
     public $webhookUrl;
 
     /**
+     * @var string incoming username.
+     */
+    public $username;
+
+    /**
+     * @var string incoming detailsUrl.
+     */
+    public $detailsUrl;
+
+    /**
+     * @var string incoming icon.
+     */
+    public $icon;
+
+    /**
+     * @var string incoming title.
+     */
+    public $title;
+
+    /**
+     * @var array incoming LEVEL.
+     */
+    const LEVELS = ['','Error'];
+
+    /**
      * @var Client|array|string Yii HTTP client configuration.
      * This can be a component ID, a configuration array or a Client instance.
      */
@@ -28,7 +54,7 @@ class SlackLogger extends  Target
 
     public function run()
     {
-        return "SlackLogger!";
+        return 'SlackLogger!';
     }
     /**
      * @inheritDoc
@@ -46,24 +72,57 @@ class SlackLogger extends  Target
      */
     public function export()
     {
-        $error = $this->filterMessages($this->messages,1);
-        foreach ($error as $message) {
-            list($text, $level, $category, $timestamp) = $message;
-            if ($level === 1) {
-                $response = $this->httpClient
-                    ->post($this->webhookUrl, $this->loadParams($text))
-                    ->setFormat(Client::FORMAT_JSON)
-                    ->send();
-                if (!$response->getIsOk()) {
-                    throw new Exception(
-                        'Unable to send logs to Slack: ' . $response->getContent()
-                    );
-                }
+        foreach ($this->filterMessages($this->messages,1) as $message) {
+            $response = $this->httpClient
+                ->post($this->webhookUrl, $this->loadParams($message))
+                ->setFormat(Client::FORMAT_JSON)
+                ->send();
+            if (!$response->getIsOk()) {
+                var_dump($response->getContent());
+                throw new Exception(
+                    'Unable to send logs to Slack: ' . $response->getContent()
+                );
             }
         }
     }
 
-    protected function loadParams($text){
-        return ['text'=>(string)$text];
+    protected function loadParams($message){
+        list($text, $level, $category, $timestamp) = $message;
+
+        return [
+	        'username'=> $this->username,
+	        'icon_emoji'=> $this->icon,
+            'attachments'=> [
+                    [
+                        'fallback'=> 'Required plain-text summary of the attachment.',
+                        'color'=> '#e42e0c',
+                        'title'=> $this->title,
+                        'title_link'=> 'https://github.com/apolloeleven/yii2-logger',
+                        'text'=> '```'.PHP_EOL. (string)$text .PHP_EOL.'```',
+                        'fields'=>[
+                            [
+                                'title' => 'Level',
+                                'value'=> '*`'.self::LEVELS[$level].'`*',
+                                'short' => true,
+                            ],
+                            [
+                                'title' => 'Category',
+                                'value'=> '`'.$category.'`',
+                                'short' => true,
+                            ]
+                        ],
+                        
+                        'actions'=>[
+                            [
+                                'text'=>'For More Details, Click Here',
+                                'url' => $this->detailsUrl,
+                                'type'=> 'button',
+                                'style'=> 'primary'
+                            ]       
+                        ],
+                        'ts'=>$timestamp
+                    ]
+            ]
+        ];
     }
 }

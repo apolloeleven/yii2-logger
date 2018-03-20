@@ -13,7 +13,7 @@ use function GuzzleHttp\Psr7\str;
 use yii\httpclient\Client;
 
 
-class SlackLogger extends Target
+class SlackTarget extends Target
 {
 
     /**

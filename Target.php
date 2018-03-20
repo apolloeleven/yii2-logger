@@ -34,7 +34,9 @@ use yii\helpers\VarDumper;
  */
 class Target extends \yii\log\Target
 {
-
+    /**
+     * @var
+     */
     public $excludeKeys;
 
     /**
@@ -47,7 +49,7 @@ class Target extends \yii\log\Target
         $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
         foreach ($context as $key => $value) {
-            foreach ($value as $k=>$v){
+            foreach ($value as $k => $v) {
                 if ($this->exclude($k))
                     $value[$k] = '*******';
             }
@@ -57,18 +59,27 @@ class Target extends \yii\log\Target
         return implode("\n\n", $result);
     }
 
-
-    private function exclude($key){
-        foreach ($this->excludeKeys as $excludeKey ){
-             return (strpos(strtolower($key), strtolower($excludeKey)) !== false);
+    /**
+     * @param $key
+     * @return bool
+     */
+    private function exclude($key)
+    {
+        $state = false;
+        foreach ($this->excludeKeys as $excludeKey) {
+            if (substr($excludeKey, 0, 1) == '*' && substr($excludeKey, -1) != '*') {
+                if (preg_match('/' . $this->clearFromStars($excludeKey) . '$/', strtolower($key))) $state = true;
+            } else if (substr($excludeKey, -1) == '*' && substr($excludeKey, 0, 1) != '*') {
+                if (substr(strtolower($key), 0, strlen($this->clearFromStars($excludeKey))) == $this->clearFromStars($excludeKey)) $state = true;
+            } else if (substr($excludeKey, -1) == '*' && substr($excludeKey, 0, 1) == '*') {
+                if (strpos(strtolower($key), $this->clearFromStars($excludeKey)) !== false) $state = true;
+            } else {
+                if (strtolower($key) == $this->clearFromStars($excludeKey)) $state = true;
+            }
         }
-        return false;
+        return $state;
     }
 
-    /**
-     * Exports log [[messages]] to a specific destination.
-     * Child classes must implement this method.
-     */
     /**
      * Exports log [[messages]] to a specific destination.
      * Child classes must implement this method.
@@ -78,8 +89,14 @@ class Target extends \yii\log\Target
         parent::init();
     }
 
-    public function getFormatMessage(){
+    public function getFormatMessage()
+    {
         $messages = array_map([$this, 'formatMessage'], $this->messages);
         return wordwrap(implode("\n", $messages), 70);
+    }
+
+    public function clearFromStars($excludeKey)
+    {
+        return strtolower(str_replace("*", "", $excludeKey));
     }
 }

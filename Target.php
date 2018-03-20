@@ -51,7 +51,7 @@ class Target extends \yii\log\Target
         foreach ($context as $key => $value) {
             foreach ($value as $k => $v) {
                 if ($this->exclude($k))
-                    $value[$k] = '*******';
+                    $value[$k] = str_repeat("*", strlen($value[$k]));
             }
             $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
         }

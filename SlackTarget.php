@@ -10,6 +10,7 @@ namespace apollo11\logger;
 
 use Exception;
 use function GuzzleHttp\Psr7\str;
+use yii\helpers\ArrayHelper;
 use yii\httpclient\Client;
 
 
@@ -44,7 +45,7 @@ class SlackTarget extends Target
     /**
      * @var array incoming LEVEL.
      */
-    const LEVELS = ['', 'Error'];
+    const LEVELS = ['', 'Error', '', '', 'Info'];
 
     /**
      * @var Client|array|string Yii HTTP client configuration.
@@ -85,8 +86,9 @@ class SlackTarget extends Target
         }
     }
 
-    protected function loadParams($text)
+    protected function loadParams($message)
     {
+        list($text, $level, $category, $timestamp) = $this->messages[0];
         return [
             'username' => $this->username,
             'icon_emoji' => $this->icon,
@@ -96,16 +98,16 @@ class SlackTarget extends Target
                     'color' => '#e42e0c',
                     'title' => $this->title,
                     'title_link' => 'https://github.com/apolloeleven/yii2-logger',
-                    'text' => '```' . PHP_EOL . (string)$text . PHP_EOL . '```',
+                    'text' => '```' . PHP_EOL . $message . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',
-                            //'value'=> '*`'.self::LEVELS[$level].'`*',
+                            'value' => '*`' . self::LEVELS[$level] . '`*',
                             'short' => true,
                         ],
                         [
                             'title' => 'Category',
-                            //'value'=> '`'.$category.'`',
+                            'value' => '`' . $category . '`',
                             'short' => true,
                         ]
                     ],
@@ -118,7 +120,7 @@ class SlackTarget extends Target
                             'style' => 'primary'
                         ]
                     ],
-                    //'ts'=>$timestamp
+                    'ts' => $timestamp
                 ]
             ]
         ];

@@ -7,13 +7,8 @@
 
 namespace apollo11\logger;
 
-use Yii;
-use yii\base\Component;
-use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
-use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
-use yii\web\Request;
 
 /**
  * Target is the base class for all log target classes.
@@ -37,12 +32,10 @@ use yii\web\Request;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @since 2.0
  */
-abstract class Target extends \yii\log\Target
+class Target extends \yii\log\Target
 {
 
-    public $excludeKeys = [
-        '*password*', '*passwd*', '*pass*'
-    ];
+    public $excludeKeys;
 
     /**
      * Generates the context information to be logged.
@@ -54,6 +47,10 @@ abstract class Target extends \yii\log\Target
         $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
         foreach ($context as $key => $value) {
+            foreach ($value as $k=>$v){
+                if ($this->exclude($k))
+                    $value[$k] = '*******';
+            }
             $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
         }
 
@@ -61,4 +58,28 @@ abstract class Target extends \yii\log\Target
     }
 
 
+    private function exclude($key){
+        foreach ($this->excludeKeys as $excludeKey ){
+             return (strpos(strtolower($key), strtolower($excludeKey)) !== false);
+        }
+        return false;
+    }
+
+    /**
+     * Exports log [[messages]] to a specific destination.
+     * Child classes must implement this method.
+     */
+    /**
+     * Exports log [[messages]] to a specific destination.
+     * Child classes must implement this method.
+     */
+    public function export()
+    {
+        parent::init();
+    }
+
+    public function getFormatMessage(){
+        $messages = array_map([$this, 'formatMessage'], $this->messages);
+        return wordwrap(implode("\n", $messages), 70);
+    }
 }

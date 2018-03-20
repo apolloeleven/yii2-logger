@@ -23,7 +23,7 @@ class DbTarget extends Target
     /**
      * @var string name of the DB table to store cache content. Defaults to "log".
      */
-    public $logTable = '{{%log}}';
+    public $logTable;
 
 
     /**
@@ -48,8 +48,8 @@ class DbTarget extends Target
         }
 
         $tableName = $this->db->quoteTableName($this->logTable);
-        $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]])
-                VALUES (:level, :category, :log_time, :prefix, :message)";
+        $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]])
+                VALUES (:level, :category, :log_time, :prefix, :message,:text)";
         $command = $this->db->createCommand($sql);
         foreach ($this->messages as $message) {
             list($text, $level, $category, $timestamp) = $message;
@@ -67,6 +67,7 @@ class DbTarget extends Target
                     ':log_time' => $timestamp,
                     ':prefix' => $this->getMessagePrefix($message),
                     ':message' => $text,
+                    ':text' => $this->getFormatMessage()
                 ])->execute() > 0) {
                 continue;
             }

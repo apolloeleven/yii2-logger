@@ -45,7 +45,7 @@ class SlackTarget extends Target
     /**
      * @var string incoming icon.
      */
-    public $icon;
+    public $icon_emoji;
 
     /**
      * @var string incoming title.
@@ -98,10 +98,12 @@ class SlackTarget extends Target
 
     protected function loadParams($message)
     {
+        var_dump($this->icon_url);
         list($text, $level, $category, $timestamp) = $this->messages[0];
         return [
             'username' => $this->username,
             'icon_url'=> $this->icon_url,
+            'icon_emoji'=> $this->icon_emoji,
             'attachments' => [
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',

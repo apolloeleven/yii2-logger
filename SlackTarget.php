@@ -98,7 +98,7 @@ class SlackTarget extends Target
                     'color' => '#e42e0c',
                     'title' => $this->title,
                     'title_link' => 'https://github.com/apolloeleven/yii2-logger',
-                    'text' => '```' . PHP_EOL . $message . PHP_EOL . '```',
+                    'text' => '<!channel>```' . PHP_EOL . $message . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',

@@ -23,6 +23,16 @@ class SlackTarget extends Target
     public $webhookUrl;
 
     /**
+     * @var string incoming webhook URL.
+     */
+    public $title_link;
+
+    /**
+     * @var string incoming webhook URL.
+     */
+    public $icon_url;
+
+    /**
      * @var string incoming username.
      */
     public $username;
@@ -91,13 +101,13 @@ class SlackTarget extends Target
         list($text, $level, $category, $timestamp) = $this->messages[0];
         return [
             'username' => $this->username,
-            'icon_emoji' => $this->icon,
+            'icon_url'=> $this->icon_url,
             'attachments' => [
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
                     'color' => '#e42e0c',
                     'title' => $this->title,
-                    'title_link' => 'https://github.com/apolloeleven/yii2-logger',
+                    'title_link' => $this->title_link,
                     'text' => '<!channel>```' . PHP_EOL . $message . PHP_EOL . '```',
                     'fields' => [
                         [

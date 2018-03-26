@@ -8,6 +8,7 @@
 namespace apollo11\logger;
 
 use yii\helpers\ArrayHelper;
+use yii\helpers\Console;
 use yii\helpers\VarDumper;
 
 /**
@@ -49,10 +50,7 @@ class Target extends \yii\log\Target
         $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
         foreach ($context as $key => $value) {
-            foreach ($value as $k => $v) {
-                if ($this->exclude($k))
-                    $value[$k] = str_repeat("*", strlen($value[$k]));
-            }
+            $value = $this->replaceMustExcludeKeys($value);
             $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
         }
 
@@ -63,21 +61,35 @@ class Target extends \yii\log\Target
      * @param $key
      * @return bool
      */
-    private function exclude($key)
+    private function mustBeExcluded($key)
     {
-        $state = false;
         foreach ($this->excludeKeys as $excludeKey) {
-            if (substr($excludeKey, 0, 1) == '*' && substr($excludeKey, -1) != '*') {
-                if (preg_match('/' . $this->clearFromStars($excludeKey) . '$/', strtolower($key))) $state = true;
-            } else if (substr($excludeKey, -1) == '*' && substr($excludeKey, 0, 1) != '*') {
-                if (substr(strtolower($key), 0, strlen($this->clearFromStars($excludeKey))) == $this->clearFromStars($excludeKey)) $state = true;
-            } else if (substr($excludeKey, -1) == '*' && substr($excludeKey, 0, 1) == '*') {
-                if (strpos(strtolower($key), $this->clearFromStars($excludeKey)) !== false) $state = true;
-            } else {
-                if (strtolower($key) == $this->clearFromStars($excludeKey)) $state = true;
+
+            $formattedExcludeKey = $this->clearFromStars($excludeKey);
+            $loweredKey = strtolower($key);
+
+            if ($excludeKey[0] === '*' && substr($excludeKey, -1) === '*' && strpos($loweredKey, $formattedExcludeKey) !== false
+                || $excludeKey[0] === '*' && preg_match('/' . $formattedExcludeKey . '$/', $loweredKey)
+                || substr($excludeKey, -1) === '*' && preg_match('/^' . $formattedExcludeKey . '/', $loweredKey)
+                || $loweredKey === $formattedExcludeKey) {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    public function replaceMustExcludeKeys($data)
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->replaceMustExcludeKeys($value);
+            } else if ($this->mustBeExcluded($key)) {
+                $data[$key] = str_repeat("*", strlen($value));
             }
         }
-        return $state;
+        return $data;
     }
 
     /**

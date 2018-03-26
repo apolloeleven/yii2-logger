@@ -9,9 +9,8 @@
 namespace apollo11\logger;
 
 use Exception;
-use function GuzzleHttp\Psr7\str;
-use yii\helpers\ArrayHelper;
 use yii\httpclient\Client;
+use yii\log\Logger;
 
 
 class SlackTarget extends Target
@@ -53,20 +52,10 @@ class SlackTarget extends Target
     public $title;
 
     /**
-     * @var array incoming LEVEL.
-     */
-    const LEVELS = ['', 'Error', '', '', 'Info'];
-
-    /**
      * @var Client|array|string Yii HTTP client configuration.
      * This can be a component ID, a configuration array or a Client instance.
      */
     public $httpClient;
-
-    public function run()
-    {
-        return 'SlackLogger!';
-    }
 
     /**
      * @inheritDoc
@@ -98,7 +87,6 @@ class SlackTarget extends Target
 
     protected function loadParams($message)
     {
-        var_dump($this->icon_url);
         list($text, $level, $category, $timestamp) = $this->messages[0];
         $slackConfig = [
             'username' => $this->username,
@@ -114,7 +102,7 @@ class SlackTarget extends Target
                     'fields' => [
                         [
                             'title' => 'Level',
-                            'value' => '*`' . self::LEVELS[$level] . '`*',
+                            'value' => '`' . Logger::getLevelName($level) . '`',
                             'short' => true,
                         ],
                         [

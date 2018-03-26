@@ -100,10 +100,10 @@ class SlackTarget extends Target
     {
         var_dump($this->icon_url);
         list($text, $level, $category, $timestamp) = $this->messages[0];
-        return [
+        $slackConfig = [
             'username' => $this->username,
-            'icon_url'=> $this->icon_url,
-            'icon_emoji'=> $this->icon_emoji,
+            'icon_url' => $this->icon_url,
+            'icon_emoji' => $this->icon_emoji,
             'attachments' => [
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
@@ -123,18 +123,22 @@ class SlackTarget extends Target
                             'short' => true,
                         ]
                     ],
-
-                    'actions' => [
-                        [
-                            'text' => 'For More Details, Click Here',
-                            'url' => $this->detailsUrl,
-                            'type' => 'button',
-                            'style' => 'primary'
-                        ]
-                    ],
                     'ts' => $timestamp
                 ]
             ]
         ];
+
+        if ($this->detailsUrl) {
+            $slackConfig['attachments'][0]['actions'] = [
+                [
+                    'text' => 'For More Details, Click Here',
+                    'url' => $this->detailsUrl,
+                    'type' => 'button',
+                    'style' => 'primary'
+                ]
+            ];
+        }
+
+        return $slackConfig;
     }
 }

@@ -54,6 +54,11 @@ class SlackTarget extends Target
     public $title;
 
     /**
+     * @var boolean Whether to mention channel members or not
+     */
+    public $mentionChannelMembers = false;
+
+    /**
      * @var Client|array|string Yii HTTP client configuration.
      * This can be a component ID, a configuration array or a Client instance.
      */
@@ -108,7 +113,7 @@ class SlackTarget extends Target
                     'color' => $this->messageColors[$level],
                     'title' => $this->title ?: $exception->getMessage(),
                     'title_link' => $this->title_link,
-                    'text' => '<!channel>```' . PHP_EOL . $message . PHP_EOL . '```',
+                    'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $message . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',

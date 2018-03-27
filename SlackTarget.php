@@ -96,7 +96,8 @@ class SlackTarget extends Target
 
     protected function loadParams($message)
     {
-        list($text, $level, $category, $timestamp) = $this->messages[0];
+        /** @var $exception ErrorException */
+        list($exception, $level, $category, $timestamp) = $this->messages[0];
         $slackConfig = [
             'username' => $this->username,
             'icon_url' => $this->icon_url,
@@ -105,7 +106,7 @@ class SlackTarget extends Target
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
                     'color' => $this->messageColors[$level],
-                    'title' => $this->title,
+                    'title' => $this->title ?: $exception->getMessage(),
                     'title_link' => $this->title_link,
                     'text' => '<!channel>```' . PHP_EOL . $message . PHP_EOL . '```',
                     'fields' => [

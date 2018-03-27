@@ -9,6 +9,8 @@
 namespace apollo11\logger;
 
 use Exception;
+use yii\base\ErrorException;
+use yii\helpers\ArrayHelper;
 use yii\httpclient\Client;
 use yii\log\Logger;
 
@@ -57,6 +59,13 @@ class SlackTarget extends Target
      */
     public $httpClient;
 
+    public $messageColors = [
+        Logger::LEVEL_ERROR => 'danger',
+        Logger::LEVEL_WARNING => 'warning',
+        Logger::LEVEL_INFO => '#aee1ff',
+        Logger::LEVEL_TRACE => 'good'
+    ];
+
     /**
      * @inheritDoc
      * @throws \yii\base\InvalidConfigException
@@ -95,7 +104,7 @@ class SlackTarget extends Target
             'attachments' => [
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
-                    'color' => '#e42e0c',
+                    'color' => $this->messageColors[$level],
                     'title' => $this->title,
                     'title_link' => $this->title_link,
                     'text' => '<!channel>```' . PHP_EOL . $message . PHP_EOL . '```',

@@ -61,7 +61,7 @@ class EmailTarget extends Target
     public function export()
     {
         if ($this->async === true) {
-            $param=base64_encode(serialize($this));
+            $param = base64_encode(serialize($this));
             $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/handle $param > /dev/null 2>/dev/null &";
             exec($cmd);
         } else {

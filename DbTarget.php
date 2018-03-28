@@ -6,6 +6,7 @@
  */
 
 namespace apollo11\logger;
+
 use yii\db\Connection;
 use yii\di\Instance;
 use yii\helpers\VarDumper;
@@ -56,7 +57,7 @@ class DbTarget extends Target
             if (!is_string($text)) {
                 // exceptions may not be serializable if in the call stack somewhere is a Closure
                 if ($text instanceof \Throwable || $text instanceof \Exception) {
-                    $text = (string) $text;
+                    $text = (string)$text;
                 } else {
                     $text = VarDumper::export($text);
                 }
@@ -73,5 +74,10 @@ class DbTarget extends Target
             }
             throw new LogRuntimeException('Unable to export log through database!');
         }
+    }
+
+    public function sendMessage()
+    {
+        // TODO: Implement sendMessage() method.
     }
 }

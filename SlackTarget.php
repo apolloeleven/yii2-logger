@@ -9,6 +9,7 @@
 namespace apollo11\logger;
 
 use Exception;
+use Yii;
 use yii\base\ErrorException;
 use yii\helpers\ArrayHelper;
 use yii\httpclient\Client;
@@ -17,7 +18,7 @@ use yii\log\Logger;
 
 class SlackTarget extends Target
 {
-
+    const CMD_PATH = PHP_BINDIR . '/php ';
     /**
      * @var string incoming webhook URL.
      */
@@ -54,6 +55,11 @@ class SlackTarget extends Target
     public $title;
 
     /**
+     * @var string incoming async.
+     */
+    public $async = true;
+
+    /**
      * @var boolean Whether to mention channel members or not
      */
     public $mentionChannelMembers = false;
@@ -87,15 +93,12 @@ class SlackTarget extends Target
      */
     public function export()
     {
-        $response = $this->httpClient
-            ->post($this->webhookUrl, $this->loadParams($this->getFormatMessage()))
-            ->setFormat(Client::FORMAT_JSON)
-            ->send();
-        if (!$response->getIsOk()) {
-            var_dump($response->getContent());
-            throw new Exception(
-                'Unable to send logs to Slack: ' . $response->getContent()
-            );
+        if ($this->async === true) {
+            $param = base64_encode(serialize($this));
+            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/handle $param > /dev/null 2>/dev/null &";
+            exec($cmd);
+        } else {
+            $this->sendMessage();
         }
     }
 
@@ -143,5 +146,19 @@ class SlackTarget extends Target
         }
 
         return $slackConfig;
+    }
+
+    public function sendMessage()
+    {
+        $response = $this->httpClient
+            ->post($this->webhookUrl, $this->loadParams($this->getFormatMessage()))
+            ->setFormat(Client::FORMAT_JSON)
+            ->send();
+        if (!$response->getIsOk()) {
+            var_dump($response->getContent());
+            throw new Exception(
+                'Unable to send logs to Slack: ' . $response->getContent()
+            );
+        }
     }
 }

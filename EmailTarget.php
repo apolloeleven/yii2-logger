@@ -60,26 +60,24 @@ class EmailTarget extends Target
      */
     public function export()
     {
+        if ($this->async === true) {
+            $param=base64_encode(serialize($this));
+            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/handle $param > /dev/null 2>/dev/null &";
+            exec($cmd);
+        } else {
+            $this->sendMessage();
+        }
+    }
+
+    public function sendMessage()
+    {
         $subject = !empty($this->message['subject']) ? $this->message['subject'] : 'Error Log';
         $from = !empty($this->message['from']) ? $this->message['from'] : 'test@test.test';
         $to = !empty($this->message['to']) ? $this->message['to'] : 'test@test.test';
 
-        if ($this->async === true) {
-            $body = str_replace('$', '\'$\'', $this->getFormatMessage());
-            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/email $from $to $subject \"$body\" > /dev/null 2>/dev/null &";
-            exec($cmd);
-        } else {
-            $this->sendEmail($this->message['from'], $this->message['to'], $this->message['subject'], $this->getFormatMessage());
-        }
-
-    }
-
-
-    public static function sendEmail($from, $to, $subject, $body)
-    {
         Yii::$app->mailer->compose()
             ->setFrom($from)
-            ->setTextBody($body)
+            ->setTextBody($this->getFormatMessage())
             ->setTo($to)
             ->setSubject($subject)
             ->send();

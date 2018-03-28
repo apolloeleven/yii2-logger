@@ -83,4 +83,6 @@ abstract class Target extends \yii\log\Target
     {
         return strtolower(str_replace("*", "", $excludeKey));
     }
+
+    abstract public function sendMessage();
 }

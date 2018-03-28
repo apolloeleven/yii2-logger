@@ -33,11 +33,16 @@ class EmailTarget extends Target
      * ],
      *
      */
-
+    const CMD_PATH = PHP_BINDIR . '/php ';
     /**
      * @var array
      */
     public $message = [];
+
+    /**
+     * @var bool
+     */
+    public $async = true;
 
     /**
      * {@inheritdoc}
@@ -55,14 +60,28 @@ class EmailTarget extends Target
      */
     public function export()
     {
-        if (empty($this->message['subject'])) $this->message['subject'] = 'Error Log';
-        if (empty($this->message['from'])) $this->message['from'] = 'test@test.test';
+        $subject = !empty($this->message['subject']) ? $this->message['subject'] : 'Error Log';
+        $from = !empty($this->message['from']) ? $this->message['from'] : 'test@test.test';
+        $to = !empty($this->message['to']) ? $this->message['to'] : 'test@test.test';
 
+        if ($this->async === true) {
+            $body = str_replace('$', '\'$\'', $this->getFormatMessage());
+            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/email $from $to $subject \"$body\" > /dev/null 2>/dev/null &";
+            exec($cmd);
+        } else {
+            $this->sendEmail($this->message['from'], $this->message['to'], $this->message['subject'], $this->getFormatMessage());
+        }
+
+    }
+
+
+    public static function sendEmail($from, $to, $subject, $body)
+    {
         Yii::$app->mailer->compose()
-            ->setFrom($this->message['from'])
-            ->setTextBody($this->getFormatMessage())
-            ->setTo($this->message['to'])
-            ->setSubject($this->message['subject'])
+            ->setFrom($from)
+            ->setTextBody($body)
+            ->setTo($to)
+            ->setSubject($subject)
             ->send();
     }
 }

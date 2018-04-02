@@ -11,75 +11,84 @@ namespace apollo11\logger;
 
 use Yii;
 use yii\base\InvalidConfigException;
+use yii\di\Instance;
+use yii\log\LogRuntimeException;
+use yii\mail\MailerInterface;
 
+/**
+ * 'components' => [
+ *     'log' => [
+ *          'targets' => [
+ *              [
+ *                  'class' => apollo11\logger\EmailTarget::class,
+ *                  'levels' => ['error'],
+ *                  'excludeKeys' => [],
+ *                  'message' => [
+ *                      'to' => 'example@example.com',
+ *                      'from' => 'example@example.com',
+ *                      'subject' => 'Apollo11 Error Logger',
+ *                  ]
+ *              ],
+ *          ],
+ *     ],
+ * ],
+ *
+ */
 class EmailTarget extends Target
 {
-    /**
-     * 'components' => [
-     *     'log' => [
-     *          'targets' => [
-     *              [
-     *                  'class' => apollo11\logger\EmailTarget::class,
-     *                  'levels' => ['error'],
-     *                  'excludeKeys' => [],
-     *                  'message' => [
-     *                      'to' => 'example@example.com',
-     *                      'from' => 'example@example.com',
-     *                      'subject' => 'Apollo11 Error Logger',
-     *                  ]
-     *              ],
-     *          ],
-     *     ],
-     * ],
-     *
-     */
-    const CMD_PATH = PHP_BINDIR . '/php ';
     /**
      * @var array
      */
     public $message = [];
 
     /**
-     * @var bool
+     * @var MailerInterface|array|string the mailer object or the application component ID of the mailer object.
+     * After the EmailTarget object is created, if you want to change this property, you should only assign it
+     * with a mailer object.
+     * Starting from version 2.0.2, this can also be a configuration array for creating the object.
      */
-    public $async = true;
+    public $mailer = 'mailer';
 
     /**
      * {@inheritdoc}
+     * @throws InvalidConfigException
      */
     public function init()
     {
+        parent::init();
         if (empty($this->message['to'])) {
             throw new InvalidConfigException('The "to" option must be set for EmailTarget::message.');
         }
+        $this->mailer = Instance::ensure($this->mailer, 'yii\mail\MailerInterface');
     }
 
     /**
-     * Exports log [[messages]] to a specific destination.
-     * Child classes must implement this method.
+     *
+     *
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     * @throws InvalidConfigException
+     * @throws LogRuntimeException
      */
-    public function export()
+    public function sendMessage()
     {
-        if ($this->async === true) {
-            $param = base64_encode(serialize($this));
-            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/handle $param > /dev/null 2>/dev/null &";
-            exec($cmd);
-        } else {
-            $this->sendMessage();
+        if (!isset($this->config['formattedMessage'])){
+            throw new InvalidConfigException('`formattedMessage` was not found in $config object. Maybe you forgot to call ->prepareConfig() method?');
+        }
+        // https://github.com/yiisoft/yii2/issues/1446
+        if (empty($this->message['subject'])) {
+            $this->message['subject'] = 'Application Log';
+        }
+
+        $message = Yii::$app->mailer->compose();
+        Yii::configure($message, $this->message);
+        $message->setTextBody($this->config['formattedMessage']);
+        if (!$message->send($this->mailer)) {
+            throw new LogRuntimeException('Unable to export log through email!');
         }
     }
 
-    public function sendMessage()
+    protected function prepareConfig()
     {
-        $subject = !empty($this->message['subject']) ? $this->message['subject'] : 'Error Log';
-        $from = !empty($this->message['from']) ? $this->message['from'] : 'test@test.test';
-        $to = !empty($this->message['to']) ? $this->message['to'] : 'test@test.test';
-
-        Yii::$app->mailer->compose()
-            ->setFrom($from)
-            ->setTextBody($this->getFormatMessage())
-            ->setTo($to)
-            ->setSubject($subject)
-            ->send();
+        $this->config['formattedMessage'] = $this->getFormatMessage();
     }
 }

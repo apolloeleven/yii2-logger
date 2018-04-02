@@ -18,7 +18,6 @@ use yii\log\Logger;
 
 class SlackTarget extends Target
 {
-    const CMD_PATH = PHP_BINDIR . '/php ';
     /**
      * @var string incoming webhook URL.
      */
@@ -55,11 +54,6 @@ class SlackTarget extends Target
     public $title;
 
     /**
-     * @var string incoming async.
-     */
-    public $async = true;
-
-    /**
      * @var boolean Whether to mention channel members or not
      */
     public $mentionChannelMembers = false;
@@ -87,26 +81,18 @@ class SlackTarget extends Target
         $this->httpClient = new Client();
     }
 
-    /**
-     * Exports log [[messages]] to a specific destination.
-     * Child classes must implement this method.
-     */
-    public function export()
+    protected function prepareConfig()
     {
-        if ($this->async === true) {
-            $param = base64_encode(serialize($this));
-            $cmd = self::CMD_PATH . Yii::$app->basePath . "/yii async/handle $param > /dev/null 2>/dev/null &";
-            exec($cmd);
-        } else {
-            $this->sendMessage();
-        }
-    }
-
-    protected function loadParams($message)
-    {
+//        \centigen\base\helpers\UtilHelper::vardump($this->messages);
         /** @var $exception ErrorException */
         list($exception, $level, $category, $timestamp) = $this->messages[0];
-        $slackConfig = [
+        $title = '';
+        if (is_string($exception)){
+            $title = $exception;
+        } else if ($exception instanceof \yii\base\Exception){
+            $title = $exception->getMessage();
+        }
+        $this->config = [
             'username' => $this->username,
             'icon_url' => $this->icon_url,
             'icon_emoji' => $this->icon_emoji,
@@ -114,9 +100,9 @@ class SlackTarget extends Target
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
                     'color' => $this->messageColors[$level],
-                    'title' => $this->title ?: $exception->getMessage(),
+                    'title' => $this->title ?: $title,
                     'title_link' => $this->title_link,
-                    'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $message . PHP_EOL . '```',
+                    'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $this->getFormatMessage() . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',
@@ -135,7 +121,7 @@ class SlackTarget extends Target
         ];
 
         if ($this->detailsUrl) {
-            $slackConfig['attachments'][0]['actions'] = [
+            $this->config['attachments'][0]['actions'] = [
                 [
                     'text' => 'For More Details, Click Here',
                     'url' => $this->detailsUrl,
@@ -145,17 +131,16 @@ class SlackTarget extends Target
             ];
         }
 
-        return $slackConfig;
     }
 
     public function sendMessage()
     {
         $response = $this->httpClient
-            ->post($this->webhookUrl, $this->loadParams($this->getFormatMessage()))
+            ->post($this->webhookUrl, $this->config)
             ->setFormat(Client::FORMAT_JSON)
             ->send();
         if (!$response->getIsOk()) {
-            var_dump($response->getContent());
+//            var_dump($response->getContent());
             throw new Exception(
                 'Unable to send logs to Slack: ' . $response->getContent()
             );

@@ -8,7 +8,6 @@
 namespace apollo11\logger;
 
 use yii\helpers\ArrayHelper;
-use yii\helpers\Console;
 use yii\helpers\VarDumper;
 
 /**
@@ -17,9 +16,33 @@ use yii\helpers\VarDumper;
 abstract class Target extends \yii\log\Target
 {
     /**
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     * @var array Config array which should be configured in `->prepareConfig` method and used in `->sendMessage` method
+     */
+    protected $config = [];
+
+    /**
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     * @var bool Whether to send messages to target asynchronously
+     */
+    public $async = true;
+
+    /**
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     * @var bool
+     */
+    public $consoleAppPath = false;
+
+    /**
+     * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
+     * @var string php executable
+     */
+    public $phpExecPath = 'php';
+
+    /**
      * @var
      */
-    public $excludeKeys;
+    public $excludeKeys = [];
 
     /**
      * Generates the context information to be logged.
@@ -84,5 +107,24 @@ abstract class Target extends \yii\log\Target
         return strtolower(str_replace("*", "", $excludeKey));
     }
 
+    /**
+     * Exports log [[messages]] to a specific destination.
+     * Child classes must implement this method.
+     */
+    public function export()
+    {
+        $this->prepareConfig();
+        $this->messages = [];
+        if ($this->async === true && $this->consoleAppPath !== false) {
+            $param = base64_encode(serialize($this));
+            $cmd = $this->phpExecPath . ' ' . $this->consoleAppPath . " async/handle $param > /dev/null 2>/dev/null &";
+            exec($cmd);
+        } else {
+            $this->sendMessage();
+        }
+    }
+
     abstract public function sendMessage();
+
+    abstract protected function prepareConfig();
 }

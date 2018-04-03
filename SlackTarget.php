@@ -76,14 +76,6 @@ class SlackTarget extends Target
         Logger::LEVEL_TRACE => 'good'
     ];
 
-
-    public $logNames = [
-        Logger::LEVEL_ERROR => 'error',
-        Logger::LEVEL_WARNING => 'warning',
-        Logger::LEVEL_INFO => 'info',
-        Logger::LEVEL_TRACE => 'trace'
-    ];
-
     /**
      * @inheritDoc
      * @throws \yii\base\InvalidConfigException
@@ -120,13 +112,13 @@ class SlackTarget extends Target
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
                     'color' => $this->messageColors[$this->level],
-                    'title' => $this->title ?: rtrim(implode(',', array_unique($title)),","),
+                    'title' => $this->title ?: rtrim(implode(',', array_unique($title)), ","),
                     'title_link' => $this->title_link,
                     'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $this->getFormatMessage() . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',
-                            'value' => '`' . $this->logNames[$this->level] . '`',
+                            'value' => '`' . Logger::getLevelName($this->level) . '`',
                             'short' => true,
                         ],
                         [

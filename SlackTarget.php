@@ -58,6 +58,11 @@ class SlackTarget extends Target
      */
     public $mentionChannelMembers = false;
 
+    private $level = 99;
+
+    private $categorty = [];
+
+
     /**
      * @var Client|array|string Yii HTTP client configuration.
      * This can be a component ID, a configuration array or a Client instance.
@@ -69,6 +74,14 @@ class SlackTarget extends Target
         Logger::LEVEL_WARNING => 'warning',
         Logger::LEVEL_INFO => '#aee1ff',
         Logger::LEVEL_TRACE => 'good'
+    ];
+
+
+    public $logNames = [
+        Logger::LEVEL_ERROR => 'error',
+        Logger::LEVEL_WARNING => 'warning',
+        Logger::LEVEL_INFO => 'info',
+        Logger::LEVEL_TRACE => 'trace'
     ];
 
     /**
@@ -83,15 +96,22 @@ class SlackTarget extends Target
 
     protected function prepareConfig()
     {
-//        \centigen\base\helpers\UtilHelper::vardump($this->messages);
         /** @var $exception ErrorException */
-        list($exception, $level, $category, $timestamp) = $this->messages[0];
-        $title = '';
-        if (is_string($exception)){
-            $title = $exception;
-        } else if ($exception instanceof \yii\base\Exception){
-            $title = $exception->getMessage();
+
+        $title = [];
+
+        foreach ($this->messages as $message) {
+            list($exception, $level, $category, $timestamp) = $message;
+            $this->level = $this->level < $level ? $this->level : $level;
+            array_push($this->categorty, $category);
+            if (is_string($exception)) {
+                $title[] = strlen($exception) < 50 ? $exception : '';
+            } else {
+                $title[] = strlen($exception->getMessage()) < 50 ? $exception->getMessage() : 0;
+            }
         }
+
+
         $this->config = [
             'username' => $this->username,
             'icon_url' => $this->icon_url,
@@ -99,23 +119,23 @@ class SlackTarget extends Target
             'attachments' => [
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
-                    'color' => $this->messageColors[$level],
-                    'title' => $this->title ?: $title,
+                    'color' => $this->messageColors[$this->level],
+                    'title' => $this->title ?: implode(',', array_unique($title)),
                     'title_link' => $this->title_link,
                     'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $this->getFormatMessage() . PHP_EOL . '```',
                     'fields' => [
                         [
                             'title' => 'Level',
-                            'value' => '`' . Logger::getLevelName($level) . '`',
+                            'value' => '`' . $this->logNames[$this->level] . '`',
                             'short' => true,
                         ],
                         [
                             'title' => 'Category',
-                            'value' => '`' . $category . '`',
+                            'value' => '`' . implode(',', array_unique($this->categorty)) . '`',
                             'short' => true,
                         ]
                     ],
-                    'ts' => $timestamp
+                    'ts' => $this->messages[0][3]
                 ]
             ]
         ];

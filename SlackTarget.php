@@ -107,7 +107,7 @@ class SlackTarget extends Target
             if (is_string($exception)) {
                 $title[] = strlen($exception) < 50 ? $exception : '';
             } else {
-                $title[] = strlen($exception->getMessage()) < 50 ? $exception->getMessage() : 0;
+                $title[] = strlen($exception->getMessage()) < 50 ? $exception->getMessage() : '';
             }
         }
 
@@ -120,7 +120,7 @@ class SlackTarget extends Target
                 [
                     'fallback' => 'Required plain-text summary of the attachment.',
                     'color' => $this->messageColors[$this->level],
-                    'title' => $this->title ?: implode(',', array_unique($title)),
+                    'title' => $this->title ?: rtrim(implode(',', array_unique($title)),","),
                     'title_link' => $this->title_link,
                     'text' => ($this->mentionChannelMembers ? '<!channel>' : '') . '```' . PHP_EOL . $this->getFormatMessage() . PHP_EOL . '```',
                     'fields' => [

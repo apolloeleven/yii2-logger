@@ -50,8 +50,8 @@ class DbTarget extends Target
         }
 
         $tableName = $this->db->quoteTableName($this->logTable);
-        $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]])
-                VALUES (:level, :category, :log_time, :prefix, :message,:text)";
+        $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]],[[user_agent]],[[remote_ip]])
+                VALUES (:level, :category, :log_time, :prefix, :message,:text,:user_agent,:remote_ip)";
         $command = $this->db->createCommand($sql);
         foreach ($this->messages as $message) {
             list($text, $level, $category, $timestamp) = $message;
@@ -69,7 +69,9 @@ class DbTarget extends Target
                     ':log_time' => $timestamp,
                     ':prefix' => $this->getMessagePrefix($message),
                     ':message' => $text,
-                    ':text' => $this->getFormatMessage()
+                    ':text' => $this->getFormatMessage(),
+                    ':user_agent' => \Yii::$app->request->getUserAgent(),
+                    ':remote_ip' => \Yii::$app->request->getRemoteIP(),
                 ])->execute() > 0) {
                 continue;
             }

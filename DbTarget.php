@@ -38,13 +38,9 @@ class DbTarget extends Target
         $this->db = Instance::ensure($this->db, Connection::class);
     }
 
-    /**
-     * Stores log messages to DB.
-     * Starting from version 2.0.14, this method throws LogRuntimeException in case the log can not be exported.
-     * @throws LogRuntimeException
-     */
-    public function export()
+    public function sendMessage()
     {
+
         if ($this->db->getTransaction()) {
             $this->db = clone $this->db;
         }
@@ -53,25 +49,16 @@ class DbTarget extends Target
         $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]],[[user_agent]],[[remote_ip]])
                 VALUES (:level, :category, :log_time, :prefix, :message,:text,:user_agent,:remote_ip)";
         $command = $this->db->createCommand($sql);
-        foreach ($this->messages as $message) {
-            list($text, $level, $category, $timestamp) = $message;
-            if (!is_string($text)) {
-                // exceptions may not be serializable if in the call stack somewhere is a Closure
-                if ($text instanceof \Throwable || $text instanceof \Exception) {
-                    $text = (string)$text;
-                } else {
-                    $text = VarDumper::export($text);
-                }
-            }
+        foreach ($this->config['messages'] as $message) {
             if ($command->bindValues([
-                    ':level' => $level,
-                    ':category' => $category,
-                    ':log_time' => $timestamp,
-                    ':prefix' => $this->getMessagePrefix($message),
-                    ':message' => $text,
-                    ':text' => $this->getFormatMessage(),
-                    ':user_agent' => \Yii::$app->request->getUserAgent(),
-                    ':remote_ip' => \Yii::$app->request->getRemoteIP(),
+                    ':level' => $message['level'],
+                    ':category' => $message['category'],
+                    ':log_time' => $message['timestamp'],
+                    ':prefix' => $message['prefix'],
+                    ':message' => $message['text'],
+                    ':text' => $this->config['formattedMessage'],
+                    ':user_agent' => $this->config['user_agent'],
+                    ':remote_ip' => $this->config['remote_ip'],
                 ])->execute() > 0) {
                 continue;
             }
@@ -79,13 +66,31 @@ class DbTarget extends Target
         }
     }
 
-    public function sendMessage()
+    protected function prepareConfig()
     {
-        // TODO: Implement sendMessage() method.
-    }
+        $messages = [];
+        foreach ($this->messages as $key => $message) {
+            list($text, $level, $category, $timestamp) = $message;
+            if (!is_string($text)) {
+                if ($text instanceof \Throwable || $text instanceof \Exception) {
+                    $text = (string)$text;
+                } else {
+                    $text = VarDumper::export($text);
+                }
+            }
 
-    public function prepareConfig()
-    {
-        // TODO: Implement prepareConfig() method.
+            $messages[$key]['text'] = $text;
+            $messages[$key]['level'] = $level;
+            $messages[$key]['category'] = $category;
+            $messages[$key]['timestamp'] = $timestamp;
+            $messages[$key]['prefix'] = $this->getMessagePrefix($message);
+        }
+
+        $this->config = [
+            'messages' => $messages,
+            'formattedMessage' => $this->getFormatMessage(),
+            'user_agent' => \Yii::$app->request->getUserAgent(),
+            'remote_ip' => \Yii::$app->request->getRemoteIP(),
+        ];
     }
 }

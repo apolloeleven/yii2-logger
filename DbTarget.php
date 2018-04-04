@@ -21,10 +21,11 @@ class DbTarget extends Target
      * with a DB connection object.
      */
     public $db = 'db';
+
     /**
      * @var string name of the DB table to store cache content. Defaults to "log".
      */
-    public $logTable;
+    public $logTable = '{{%apollo11_sys_log}}';
 
 
     /**
@@ -79,5 +80,10 @@ class DbTarget extends Target
     public function sendMessage()
     {
         // TODO: Implement sendMessage() method.
+    }
+
+    public function prepareConfig()
+    {
+        // TODO: Implement prepareConfig() method.
     }
 }

@@ -79,6 +79,8 @@ class m180320_111925_apollo11_log_table extends Migration
                 'prefix' => $this->text(),
                 'message' => $this->text(),
                 'text' => $this->text(),
+                'user_agent' => $this->text(),
+                'remote_ip' => $this->string()
             ], $tableOptions);
 
             $this->createIndex('idx_log_level', $target->logTable, 'level');

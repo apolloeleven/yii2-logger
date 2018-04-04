@@ -23,6 +23,9 @@ create table `log`
    `prefix`      text,
    `message`     text,
    `text`     text,
+   `user_agent`     text,
+   `remote_ip`     varchar(255),
+
    key `idx_log_level` (`level`),
    key `idx_log_category` (`category`)
 ) engine InnoDB;

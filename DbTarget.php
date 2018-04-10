@@ -45,24 +45,28 @@ class DbTarget extends Target
             $this->db = clone $this->db;
         }
 
-        $tableName = $this->db->quoteTableName($this->logTable);
-        $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]],[[user_agent]],[[remote_ip]])
+        if (\Yii::$app->db->schema->getTableSchema($target->logTable) !== null) {
+            $tableName = $this->db->quoteTableName($this->logTable);
+            $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]],[[user_agent]],[[remote_ip]])
                 VALUES (:level, :category, :log_time, :prefix, :message,:text,:user_agent,:remote_ip)";
-        $command = $this->db->createCommand($sql);
-        foreach ($this->config['messages'] as $message) {
-            if ($command->bindValues([
-                    ':level' => $message['level'],
-                    ':category' => $message['category'],
-                    ':log_time' => $message['timestamp'],
-                    ':prefix' => $message['prefix'],
-                    ':message' => $message['text'],
-                    ':text' => $this->config['formattedMessage'],
-                    ':user_agent' => $this->config['user_agent'],
-                    ':remote_ip' => $this->config['remote_ip'],
-                ])->execute() > 0) {
-                continue;
+            $command = $this->db->createCommand($sql);
+            foreach ($this->config['messages'] as $message) {
+                if ($command->bindValues([
+                        ':level' => $message['level'],
+                        ':category' => $message['category'],
+                        ':log_time' => $message['timestamp'],
+                        ':prefix' => $message['prefix'],
+                        ':message' => $message['text'],
+                        ':text' => $this->config['formattedMessage'],
+                        ':user_agent' => $this->config['user_agent'],
+                        ':remote_ip' => $this->config['remote_ip'],
+                    ])->execute() > 0) {
+                    continue;
+                }
+                throw new LogRuntimeException('Unable to export log through database!');
             }
-            throw new LogRuntimeException('Unable to export log through database!');
+        } else {
+            throw new LogRuntimeException('Table ' . $this->logTable . ' Does not exist');
         }
     }
 

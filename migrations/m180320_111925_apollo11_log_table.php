@@ -71,20 +71,29 @@ class m180320_111925_apollo11_log_table extends Migration
                 $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
             }
 
-            $this->createTable($target->logTable, [
-                'id' => $this->bigPrimaryKey(),
-                'level' => $this->integer(),
-                'category' => $this->string(),
-                'log_time' => $this->double(),
-                'prefix' => $this->text(),
-                'message' => $this->text(),
-                'text' => $this->text(),
-                'user_agent' => $this->text(),
-                'remote_ip' => $this->string()
-            ], $tableOptions);
-
-            $this->createIndex('idx_log_level', $target->logTable, 'level');
-            $this->createIndex('idx_log_category', $target->logTable, 'category');
+            $tableSchema = \Yii::$app->db->schema->getTableSchema($target->logTable);
+            if ($tableSchema === null) {
+                $this->createTable($target->logTable, [
+                    'id' => $this->bigPrimaryKey(),
+                    'level' => $this->integer(),
+                    'category' => $this->string(),
+                    'log_time' => $this->double(),
+                    'prefix' => $this->text(),
+                    'message' => $this->text(),
+                    'text' => $this->text(),
+                    'user_agent' => $this->text(),
+                    'remote_ip' => $this->string()
+                ], $tableOptions);
+                $this->createIndex('idx_log_level', $target->logTable, 'level');
+                $this->createIndex('idx_log_category', $target->logTable, 'category');
+            } else {
+                $confirm = yii\helpers\Console::confirm("Do you want to Add text, user_agent, remote_ip column to " . $target->logTable . "?");
+                if ($confirm) {
+                    $this->addColumn($target->logTable, 'text', $this->text());
+                    $this->addColumn($target->logTable, 'user_agent', $this->text());
+                    $this->addColumn($target->logTable, 'remote_ip', $this->string());
+                }
+            }
         }
     }
 
@@ -93,8 +102,19 @@ class m180320_111925_apollo11_log_table extends Migration
         $targets = $this->getDbTargets();
         foreach ($targets as $target) {
             $this->db = $target->db;
-
-            $this->dropTable($target->logTable);
+            $tableSchema = \Yii::$app->db->schema->getTableSchema($target->logTable);
+            if ($tableSchema !== null) {
+                $confirmDeleteColumns = yii\helpers\Console::confirm("Do you want to Delete text, user_agent, remote_ip column from " . $target->logTable . " table?");
+                if ($confirmDeleteColumns) {
+                    $this->dropColumn($target->logTable, 'text');
+                    $this->dropColumn($target->logTable, 'user_agent');
+                    $this->dropColumn($target->logTable, 'remote_ip');
+                }
+                $confirmDeleteTable = yii\helpers\Console::confirm("Do you want to Delete " . $target->logTable . " table?");
+                if ($confirmDeleteTable) {
+                    $this->dropTable($target->logTable);
+                }
+            }
         }
     }
 }

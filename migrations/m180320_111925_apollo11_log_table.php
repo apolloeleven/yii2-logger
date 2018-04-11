@@ -103,14 +103,14 @@ class m180320_111925_apollo11_log_table extends Migration
         foreach ($targets as $target) {
             $this->db = $target->db;
 
-            $confirmDeleteColumns = yii\helpers\Console::confirm("Do you want to drop text, user_agent, remote_ip columns from " . $target->logTable . " table?");
-            if ($confirmDeleteColumns) {
+            $confirmDropColumns = yii\helpers\Console::confirm("Do you want to drop text, user_agent, remote_ip columns from " . $target->logTable . " table?");
+            if ($confirmDropColumns) {
                 $this->dropColumn($target->logTable, 'text');
                 $this->dropColumn($target->logTable, 'user_agent');
                 $this->dropColumn($target->logTable, 'remote_ip');
             }
-            $confirmDeleteTable = yii\helpers\Console::confirm("Do you want to drop " . $target->logTable . " table?");
-            if ($confirmDeleteTable) {
+            $confirmDropTable = yii\helpers\Console::confirm("Do you want to drop " . $target->logTable . " table?");
+            if ($confirmDropTable) {
                 $this->dropTable($target->logTable);
             }
 

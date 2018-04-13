@@ -45,7 +45,7 @@ class DbTarget extends Target
             $this->db = clone $this->db;
         }
 
-        if (\Yii::$app->db->schema->getTableSchema($target->logTable) !== null) {
+        if (\Yii::$app->db->schema->getTableSchema($this->logTable) !== null) {
             $tableName = $this->db->quoteTableName($this->logTable);
             $sql = "INSERT INTO $tableName ([[level]], [[category]], [[log_time]], [[prefix]], [[message]],[[text]],[[user_agent]],[[remote_ip]])
                 VALUES (:level, :category, :log_time, :prefix, :message,:text,:user_agent,:remote_ip)";

@@ -25,13 +25,13 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'prefix') ?>
 
-    <?php // echo $form->field($model, 'message') ?>
+    <?= $form->field($model, 'message') ?>
 
-    <?php // echo $form->field($model, 'text') ?>
+    <?= $form->field($model, 'text') ?>
 
-    <?php // echo $form->field($model, 'user_agent') ?>
+    <?= $form->field($model, 'user_agent') ?>
 
-    <?php // echo $form->field($model, 'remote_ip') ?>
+    <?= $form->field($model, 'remote_ip') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

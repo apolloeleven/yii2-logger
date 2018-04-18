@@ -1,6 +1,6 @@
 <?php
 
-namespace apollo11\models;
+namespace apollo11\logger\models;
 
 use Yii;
 

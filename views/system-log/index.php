@@ -25,17 +25,39 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
-            'id',
-            'level',
+            //'id',
+            [
+                'attribute'=>'level',
+                'value'=>function ($model) {
+                    return \yii\log\Logger::getLevelName($model->level);
+                },
+                'filter'=>[
+                    \yii\log\Logger::LEVEL_ERROR => 'error',
+                    \yii\log\Logger::LEVEL_WARNING => 'warning',
+                    \yii\log\Logger::LEVEL_INFO => 'info',
+                    \yii\log\Logger::LEVEL_TRACE => 'trace',
+                    \yii\log\Logger::LEVEL_PROFILE_BEGIN => 'profile begin',
+                    \yii\log\Logger::LEVEL_PROFILE_END => 'profile end'
+                ]
+            ],
             'category',
-            'log_time',
-            'prefix:ntext',
-            //'message:ntext',
+            [
+                'attribute' => 'log_time',
+                'format' => 'datetime',
+                'value' => function ($model) {
+                    return (int) $model->log_time;
+                }
+            ],
+            //'prefix:ntext',
+            'message:ntext',
             //'text:ntext',
-            //'user_agent:ntext',
-            //'remote_ip',
+            'user_agent:ntext',
+            'remote_ip',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template'=>'{view}{delete}'
+            ]
         ],
     ]); ?>
 </div>

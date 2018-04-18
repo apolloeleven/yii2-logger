@@ -2,16 +2,21 @@
 
 namespace apollo11\logger\controllers;
 
+use apollo11\logger\models\Hello;
+use apollo11\logger\models\SystemLog;
+use apollo11\logger\models\SystemLogSearch;
 use Yii;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+
 
 /**
  * SystemLogController implements the CRUD actions for SystemLog model.
  */
 class SystemLogController extends Controller
 {
+    public $controllerNamespace = 'apollo11\logger\controllers';
     /**
      * @inheritdoc
      */
@@ -33,6 +38,7 @@ class SystemLogController extends Controller
      */
     public function actionIndex()
     {
+
         $searchModel = new SystemLogSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace apollo11\models;
+namespace apollo11\logger\models;
 
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use common\models\SystemLog;
+use apollo11\logger\models\SystemLog;
 
 /**
  * SystemLogSearch represents the model behind the search form of `common\models\SystemLog`.
@@ -73,8 +73,5 @@ class SystemLogSearch extends SystemLog
             ->andFilterWhere(['like', 'remote_ip', $this->remote_ip]);
 
         return $dataProvider;
-    }
-    public static function g(){
-        
     }
 }

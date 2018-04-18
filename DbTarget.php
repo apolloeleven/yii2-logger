@@ -98,4 +98,8 @@ class DbTarget extends Target
             'remote_ip' => \Yii::$app->request->getRemoteIP(),
         ];
     }
+    
+    public function getTableName(){
+        return $this->logTable;
+    }
 }

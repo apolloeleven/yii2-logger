@@ -57,7 +57,7 @@ class DbTarget extends Target
                         ':log_time' => $message['timestamp'],
                         ':prefix' => $message['prefix'],
                         ':message' => $message['text'],
-                        ':text' => $this->config['formattedMessage'],
+                        ':text' => $message['formattedMessage'],
                         ':user_agent' => $this->config['user_agent'],
                         ':remote_ip' => $this->config['remote_ip'],
                     ])->execute() > 0) {
@@ -73,6 +73,7 @@ class DbTarget extends Target
     protected function prepareConfig()
     {
         $messages = [];
+        if ($this->getLevels()>>2 === 0) array_pop($this->messages);
         foreach ($this->messages as $key => $message) {
             list($text, $level, $category, $timestamp) = $message;
             if (!is_string($text)) {
@@ -86,13 +87,13 @@ class DbTarget extends Target
             $messages[$key]['text'] = $text;
             $messages[$key]['level'] = $level;
             $messages[$key]['category'] = $category;
+            $messages[$key]['formattedMessage'] = $text.PHP_EOL.$this->getContextMessage();
             $messages[$key]['timestamp'] = $timestamp;
             $messages[$key]['prefix'] = $this->getMessagePrefix($message);
         }
 
         $this->config = [
             'messages' => $messages,
-            'formattedMessage' => $this->getFormatMessage(),
             'user_agent' => \Yii::$app->request->getUserAgent(),
             'remote_ip' => \Yii::$app->request->getRemoteIP(),
         ];

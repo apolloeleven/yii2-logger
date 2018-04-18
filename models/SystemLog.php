@@ -3,9 +3,9 @@
 namespace apollo11\logger\models;
 
 use Yii;
+use apollo11\logger\DbTarget;
 
 /**
- * This is the model class for table "system_log".
  *
  * @property int $id
  * @property int $level
@@ -24,8 +24,9 @@ class SystemLog extends \yii\db\ActiveRecord
      */
     public static function tableName()
     {
-        return 'system_log';
+        return self::getDbName();
     }
+
 
     /**
      * @inheritdoc
@@ -56,5 +57,19 @@ class SystemLog extends \yii\db\ActiveRecord
             'user_agent' => 'User Agent',
             'remote_ip' => 'Remote Ip',
         ];
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getDbName(){
+        $log = Yii::$app->getLog();
+        foreach ($log->targets as $target) {
+            if ($target instanceof DbTarget) {
+                return $target->logTable;
+            }
+        }
+
+        throw new LogRuntimeException('Unable to find db');
     }
 }

@@ -65,3 +65,12 @@ Add the following code to your project configuration file under `components` -> 
 'excludeKeys' => [],
 ```
 
+#### Important
+If you set `async` property to true, you must add the following code into your console application `controllerMap`
+
+```
+'async' => [
+    'class' => \apollo11\logger\AsyncController::class,
+],
+```
+

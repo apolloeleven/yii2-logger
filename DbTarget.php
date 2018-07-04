@@ -95,7 +95,7 @@ class DbTarget extends Target
         $this->config = [
             'messages' => $messages,
             'user_agent' => \Yii::$app->request->getUserAgent(),
-            'remote_ip' => \Yii::$app->request->getRemoteIP(),
+            'remote_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null
         ];
     }
     

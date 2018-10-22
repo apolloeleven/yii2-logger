@@ -4,6 +4,7 @@ namespace apollo11\logger\models;
 
 use Yii;
 use apollo11\logger\DbTarget;
+use yii\base\Exception;
 
 /**
  *
@@ -70,6 +71,6 @@ class SystemLog extends \yii\db\ActiveRecord
             }
         }
 
-        throw new LogRuntimeException('Unable to find db');
+        throw new Exception('Unable to find db');
     }
 }

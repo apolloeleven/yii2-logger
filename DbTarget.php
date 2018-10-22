@@ -7,10 +7,10 @@
 
 namespace apollo11\logger;
 
+use yii\base\Exception;
 use yii\db\Connection;
 use yii\di\Instance;
 use yii\helpers\VarDumper;
-use yii\log\LogRuntimeException;
 
 
 class DbTarget extends Target
@@ -63,10 +63,10 @@ class DbTarget extends Target
                     ])->execute() > 0) {
                     continue;
                 }
-                throw new LogRuntimeException('Unable to export log through database!');
+                throw new Exception('Unable to export log through database!');
             }
         } else {
-            throw new LogRuntimeException('Table ' . $this->logTable . ' Does not exist');
+            throw new Exception('Table ' . $this->logTable . ' Does not exist');
         }
     }
 
@@ -95,7 +95,7 @@ class DbTarget extends Target
         $this->config = [
             'messages' => $messages,
             'user_agent' => \Yii::$app->request->getUserAgent(),
-            'remote_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null
+            'remote_ip' => \Yii::$app->request->getRemoteIP(),
         ];
     }
     

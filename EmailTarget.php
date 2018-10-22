@@ -10,9 +10,9 @@ namespace apollo11\logger;
 
 
 use Yii;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
-use yii\log\LogRuntimeException;
 use yii\mail\MailerInterface;
 
 /**
@@ -67,7 +67,7 @@ class EmailTarget extends Target
      *
      * @author Zura Sekhniashvili <zurasekhniashvili@gmail.com>
      * @throws InvalidConfigException
-     * @throws LogRuntimeException
+     * @throws Exception
      */
     public function sendMessage()
     {
@@ -83,7 +83,7 @@ class EmailTarget extends Target
         Yii::configure($message, $this->message);
         $message->setTextBody($this->config['formattedMessage']);
         if (!$message->send($this->mailer)) {
-            throw new LogRuntimeException('Unable to export log through email!');
+            throw new Exception('Unable to export log through email!');
         }
     }
 

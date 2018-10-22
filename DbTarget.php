@@ -8,6 +8,7 @@
 namespace apollo11\logger;
 
 use yii\base\Exception;
+use yii\console\Request;
 use yii\db\Connection;
 use yii\di\Instance;
 use yii\helpers\VarDumper;
@@ -92,10 +93,14 @@ class DbTarget extends Target
             $messages[$key]['prefix'] = $this->getMessagePrefix($message);
         }
 
+        $userAgent = null;
+        if (!(\Yii::$app->request instanceof Request)){
+            $userAgent = \Yii::$app->request->getUserAgent();
+        }
         $this->config = [
             'messages' => $messages,
-            'user_agent' => \Yii::$app->request->getUserAgent(),
-            'remote_ip' => \Yii::$app->request->getRemoteIP(),
+            'user_agent' => $userAgent,
+            'remote_ip' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : null
         ];
     }
     

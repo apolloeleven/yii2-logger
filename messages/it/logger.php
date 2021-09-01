@@ -3,5 +3,12 @@
 
 return [
     'Level' => 'Livello',
-    'Category' => 'Categoria'
+    'Category' => 'Categoria',
+    'Log Time' => 'Registrato il',
+    'Prefix'   => 'Prefisso',
+    'Message'  => 'Messaggio',
+    'Text'     => 'Testo',
+    'User Agent' => 'Browser',
+    'Remote Ip'  => 'Indirizzo Ip'
+
 ];

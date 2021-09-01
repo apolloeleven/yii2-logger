@@ -49,14 +49,14 @@ class SystemLog extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'level' => 'Level',
-            'category' => 'Category',
-            'log_time' => 'Log Time',
-            'prefix' => 'Prefix',
-            'message' => 'Message',
-            'text' => 'Text',
-            'user_agent' => 'User Agent',
-            'remote_ip' => 'Remote Ip',
+            'level' => Yii::t('logger','Level'),
+            'category' => Yii::t('logger','Category'),
+            'log_time' => Yii::t('logger','Log Time'),
+            'prefix' => Yii::t('logger','Prefix'),
+            'message' => Yii::t('logger','Message'),
+            'text' => Yii::t('logger','Text'),
+            'user_agent' => Yii::t('logger','User Agent'),
+            'remote_ip' => Yii::t('logger','Remote Ip'),
         ];
     }
 
